@@ -16,38 +16,56 @@
                 Console.WriteLine("МЕНЮ");
                 Console.WriteLine("1. Вычислить полупериметр треугольника со сторонами a, b, c.");
                 Console.WriteLine("2. Вычислить площадь треугольника по формуле Герона.");
-                Console.WriteLine("3. Вычислить радиус вписанной/описанной окружности");
+                Console.WriteLine("3. Вычислить радиус вписанной (r) и радиус описанной (R) окружностей.");
                 Console.WriteLine("4. Выход.");
-               
-                //Последовательно получаем и проверяем все необходимое (Длины, номер задачи)
-                Console.Write("\nВведите желаемое действие: ");
-                if (int.TryParse(Console.ReadLine(), out choice) && choice > 0 && choice < 5)
+
+                //Выбор задачи и ввод сторон
+                Console.Write("\nВведите номер задачи: ");
+                if (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 4)
                 {
-                    if (choice == 4)
-                        return;
-                    Console.Write("Введите a: ");
-                    if (double.TryParse(Console.ReadLine(), out a))
-                    {
-                        Console.Write("Введите b: ");
-                        if (double.TryParse(Console.ReadLine(), out b))
-                        {
-                            Console.Write("Введите c: ");
-                            if (double.TryParse(Console.ReadLine(), out c))
-                            {
-                                if (!(a + b > c && b + c > a && a + c > b) || a == 0 || b == 0 || c == 0) //Проверка на существование треуголника
-                                {
-                                    Console.WriteLine($"Треугольник со сторонами a = {a}, b = {b}, c = {c} не существует!");
-                                    Console.WriteLine("Нажмите любую клавишу для продолжения...");
-                                    Console.ReadKey();
-                                    continue;
-                                }    
-                            }
-                        }
-                    }
+                    Error("введён некорректный номер задачи!");
+                    continue;
                 }
                 else
-                    continue;
-                Poluperimetr();
+                {
+                    if (choice == 4) return;
+
+                    //Попытка получить длинны сторон
+                    try
+                    {
+                        Console.Write("Введите a: ");
+                        a = double.Parse(Console.ReadLine()!);
+
+                        Console.Write("Введите b: ");
+                        b = double.Parse(Console.ReadLine()!);
+
+                        Console.Write("Введите c: ");
+                        c = double.Parse(Console.ReadLine()!);
+                    }
+                    catch (FormatException)
+                    {
+                        Error("введено некорректное числовое значение длины стороны!");
+                        continue;
+                    }
+
+                    //Проверка длинн сторон
+                    if (c < 0 || a < 0 || b < 0)
+                    {
+                        Error("длина стороны не может быть отрицательной!");
+                        continue;
+                    }
+
+                    //Проверка на существование треуголника
+                    if (!(a + b > c && b + c > a && a + c > b) || a == 0 || b == 0 || c == 0) 
+                    {
+                        string text_error = $"треугольник со сторонами a = {a}, b = {b}, c = {c} не существует!";
+                        Error(text_error);
+                        continue;
+                    }
+
+                    Poluperimetr(); //Все длинны получены, приступаем к рассчётам
+                }
+
             }
         }
         static void Poluperimetr() //Поиск полупериметра
@@ -56,55 +74,44 @@
             if (choice == 1) //Если требуется решить эту задачу, выдаем ответ и все
             {
                 Console.WriteLine($"p = {p:F2}");
-                Console.WriteLine("Нажмите любую клавишу для продолжения...");
-                Console.ReadKey();
-                return;
+                End();
             }
             else //Иначе переходим к следующему этапу
                 Ploshad(p);
         }
+
         static void Ploshad(double p) //Поиск площади формулой Герона
         {
-            double pod_kornem = p * (p - a) * (p - b) * (p - c); //Считаем подкоренное значение
-            if (pod_kornem < 0) //Чтобы убедиться что оно не < 0
-                Error("подкоренное выражение < 0, поиск площади формулой Герона невозможен!");
-
-            double s = Math.Sqrt(pod_kornem); //Считаем по формуле
+            double s = Math.Sqrt(p * (p - a) * (p - b) * (p - c)); //Считаем по формуле
             if (choice == 2) //Если требуется решить эту задачу, выводим ответ и завершаем работу
             {
                 Console.WriteLine($"S = {s:F2}");
-                Console.WriteLine("Нажмите любую клавишу для продолжения...");
-                Console.ReadKey();
-                return;
+                End();
             }
             else //Иначе переходим к следующему этапу
                 Radius(p, s);
         }
+
         static void Radius(double p, double s) //Поиск радиуса вписанной/описанной окружности
         {
-            Console.WriteLine("Какой окружности радиус необходимо найти? (1 - вписанная, 2 - описанная)");
-            //Получаем и проверяем номер выбранной подзадачи
-            if (int.TryParse(Console.ReadLine(), out int choice_radius) && choice_radius < 3 && choice_radius > 0)
-            {
-                if (choice_radius == 1) //Считаем радиус вписанной
-                {
-                    double r = s / p; //По формуле
-                    Console.WriteLine($"r = {r:F2}");
-                }
-                else //Считаем радиус описанной
-                {
-                    double R = (a*b*c) / (4*s); //По формуле
-                    Console.WriteLine($"R = {R:F2}");
-                }
-                Console.WriteLine("Нажмите любую клавишу для продолжения...");
-                Console.ReadKey();
-                return;
-            }
+            double r = s / p; //Радиус вписанной окружности
+            double R = (a*b*c) / (4*s); //Радиус описанной окружности
+
+            Console.WriteLine($"r = {r:F2}");
+            Console.WriteLine($"R = {R:F2}");
+            End();
         }
+
         static void Error(string message) //Функция для вывода ошибки
         {
-            Console.WriteLine("Ошибка, ", message);
-            Console.WriteLine("Нажмите любую клавишу для продолжения...");
+            Console.WriteLine("Ошибка, " + message);
+            Console.Write("Нажмите любую клавишу для продолжения...");
+            Console.ReadKey();
+        }
+
+        static void End() //Функция корректного завершения программы
+        {
+            Console.Write("Нажмите любую клавишу для продолжения...");
             Console.ReadKey();
             return;
         }
